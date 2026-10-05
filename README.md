@@ -23,7 +23,7 @@ Author: Alex Isaev
 - **A transactional email outbox instead of a task queue.** Every message is a database row before it is an SMTP conversation. Rows are claimed with one atomic `UPDATE`, retried on a backoff ladder whose last rung repeats, and swept back if a process dies mid-send. See [docs/outbox.md](docs/outbox.md).
 - **Private video that only plays on its own page.** Files have no public URL. Each page view mints an HMAC-signed address that expires after 6 hours, is accepted only for same-origin fetches, and serves HTTP Range requests with correct 206 and 416 answers.
 - **Signup that creates nothing until the address is proven.** The join form writes a pending row with an already-hashed password. A `User` exists only after a 6-digit code or a magic link comes back, and a single `UPDATE` makes the code and the link racing each other produce one account.
-- **Security from the edge to the view.** Cloudflare, nginx, Django settings and the views each carry their own controls, and the config fails closed. See [docs/security.md](docs/security.md).
+- **Security from the edge to the view.** Cloudflare, nginx, Django settings and the views each carry their own controls, and the config fails closed. See [docs/security-model.md](docs/security-model.md).
 - **A CMS for one non-technical person on a phone.** Every action is a plain form POST that works without JavaScript; with JavaScript the editor becomes a document you type into.
 
 ## The problem
@@ -119,7 +119,7 @@ More detail, including the data model: [docs/architecture.md](docs/architecture.
 | Files | Private storage whose `url()` raises, so a template cannot leak a link by accident. Signed forms are served only by a view that checks who is asking, and footage only through signed, expiring URLs. Uploaded photographs are re-encoded to WebP with EXIF, GPS and colour-profile data dropped; a file that already arrives as WebP is kept as sent. Panel uploads are also capped at 60 megapixels and checked with Pillow's `verify()` before anything decodes them, and documents and audio are checked against an allow-list. Deleting a student from the panel removes their photo, signature and PDF from disk. |
 | Containers and supply chain | Non-root app user. Secrets arrive at runtime and are excluded from the build context. Redis requires a password even on the private network. Log rotation caps. 13 direct dependencies, all pinned to exact versions, with the reasons for the image-decoder versions written beside them. `pip-audit` scans the installed packages, not just the pins, in a throwaway container. `ruff` runs with the bandit (`S`), naive-datetime (`DTZ`) and blind-except (`BLE`) rule sets. |
 
-The full write-up, including the trade-offs I chose deliberately, is in [docs/security.md](docs/security.md).
+The full write-up, including the trade-offs I chose deliberately, is in [docs/security-model.md](docs/security-model.md).
 
 ## Deployment
 
